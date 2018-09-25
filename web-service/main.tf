@@ -152,6 +152,9 @@ resource "aws_ecs_service" "main" {
   deployment_minimum_healthy_percent = "${var.deployment_minimum_healthy_percent}"
   deployment_maximum_percent         = "${var.deployment_maximum_percent}"
 
+  # Track the latest ACTIVE revision
+  task_definition = "${module.task.name}:${max("${module.task.revision}", "${data.aws_ecs_task_definition.task.revision}")}"
+
   load_balancer {
     target_group_arn = "${module.alb.target_group}"
     container_name   = "${module.task.name}"
@@ -161,6 +164,10 @@ resource "aws_ecs_service" "main" {
   lifecycle {
     create_before_destroy = true
   }
+}
+
+data "aws_ecs_task_definition" "task" {
+  task_definition = "${module.task.name}"
 }
 
 module "task" {
