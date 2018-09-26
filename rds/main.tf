@@ -51,6 +51,16 @@ variable "maintenance_window" {
   default     = "Mon:01:00-Mon:02:00"
 }
 
+variable "monitoring_interval" {
+  description = "Seconds between enhanced monitoring metric collection. 0 disables enhanced monitoring."
+  default     = "0"
+}
+
+variable "monitoring_role_arn" {
+  description = "The ARN for the IAM role that permits RDS to send enhanced monitoring metrics to CloudWatch Logs. Required if monitoring_interval > 0."
+  default     = ""
+}
+
 variable "apply_immediately" {
   description = "If false, apply changes during maintenance window"
   default     = true
@@ -97,32 +107,40 @@ variable "subnet_ids" {
   type        = "list"
 }
 
+resource "aws_security_group_rule" "main-ingress-cidrs" {
+  security_group_id = "${aws_security_group.main.id}"
+  type              = "ingress"
+  cidr_blocks       = ["${var.ingress_allow_cidr_blocks}"]
+  from_port         = "${var.port}"
+  to_port           = "${var.port}"
+  protocol          = "TCP"
+}
+
+resource "aws_security_group_rule" "main-ingress-sgs" {
+  security_group_id        = "${aws_security_group.main.id}"
+  type                     = "ingress"
+  count                    = "${length(var.ingress_allow_security_groups)}"
+  source_security_group_id = "${element(var.ingress_allow_security_groups, count.index)}"
+
+  from_port                = "${var.port}"
+  to_port                  = "${var.port}"
+  protocol                 = "TCP"
+}
+
+resource "aws_security_group_rule" "main-egress-all" {
+  security_group_id = "${aws_security_group.main.id}"
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = -1
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+
 resource "aws_security_group" "main" {
   name        = "${var.name}-rds"
   description = "Allows traffic to RDS from other security groups"
   vpc_id      = "${var.vpc_id}"
-
-  ingress {
-    from_port       = "${var.port}"
-    to_port         = "${var.port}"
-    protocol        = "TCP"
-    security_groups = ["${var.ingress_allow_security_groups}"]
-  }
-
-  ingress {
-    from_port   = "${var.port}"
-    to_port     = "${var.port}"
-    protocol    = "TCP"
-    cidr_blocks = ["${var.ingress_allow_cidr_blocks}"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = -1
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   tags {
     Name = "RDS (${var.name})"
   }
@@ -146,10 +164,13 @@ resource "aws_db_instance" "main" {
   name           = "${coalesce(var.database, var.name)}"
 
   # Backups / maintenance
-  backup_retention_period = "${var.backup_retention_period}"
-  backup_window           = "${var.backup_window}"
-  maintenance_window      = "${var.maintenance_window}"
-  apply_immediately       = "${var.apply_immediately}"
+  backup_retention_period   = "${var.backup_retention_period}"
+  backup_window             = "${var.backup_window}"
+  maintenance_window        = "${var.maintenance_window}"
+  monitoring_interval       = "${var.monitoring_interval}"
+  monitoring_role_arn       = "${var.monitoring_role_arn}"
+  apply_immediately         = "${var.apply_immediately}"
+  final_snapshot_identifier = "${var.name}-finalsnapshot"
 
   # Hardware
   instance_class    = "${var.instance_class}"

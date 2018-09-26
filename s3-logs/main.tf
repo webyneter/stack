@@ -1,11 +1,8 @@
-variable "name" {
-}
+variable "name" {}
 
-variable "environment" {
-}
+variable "environment" {}
 
-variable "account_id" {
-}
+variable "account_id" {}
 
 variable "logs_expiration_enabled" {
   default = false
@@ -15,12 +12,14 @@ variable "logs_expiration_days" {
   default = 30
 }
 
+data "aws_elb_service_account" "main" {}
+
 data "template_file" "policy" {
   template = "${file("${path.module}/policy.json")}"
 
   vars = {
     bucket     = "${var.name}-${var.environment}-logs"
-    account_id = "${var.account_id}"
+    elb_account_id = "${data.aws_elb_service_account.main.arn}"
   }
 }
 
@@ -28,8 +27,8 @@ resource "aws_s3_bucket" "logs" {
   bucket = "${var.name}-${var.environment}-logs"
 
   lifecycle_rule {
-    id = "logs-expiration"
-    prefix = ""
+    id      = "logs-expiration"
+    prefix  = ""
     enabled = "${var.logs_expiration_enabled}"
 
     expiration {

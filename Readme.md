@@ -155,12 +155,16 @@ traffic in and out of the different subnets. The Stack terraform will automatica
 
 Traffic from each internal subnet to the outside world will run through the associated NAT gateway.
 
+Alternatively, setting the `use_nat_instances` VPC module variable to true, will use [EC2 NAT instances][nat-instances] instead of the NAT gateway. NAT instances cost less than the NAT gateway, can be shutdown when not in use, and may be preferred in development environments. By default, NAT instances will not use [Elastic IPs][elastic-ip] to avoid a small hourly charge if the NAT instances are not running full time. To use Elastic IPs for the NAT instances, set the `use_eip_with_nat_instances` VPC module variable to true.
+
 For further reading, check out these sources:
 
 - [Recommended Address Space](http://serverfault.com/questions/630022/what-is-the-recommended-cidr-when-creating-vpc-on-aws)
 - [Practical VPC Design](https://medium.com/aws-activate-startup-blog/practical-vpc-design-8412e1a18dcc)
 
 [nat-gateway]: http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/vpc-nat-gateway.html
+[nat-instances]: http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_NAT_Instance.html
+[elastic-ip]: http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html
 
 ### Instances
 
@@ -194,7 +198,7 @@ For more complicated service discovery which handles cases like versioning, we'd
 
 ### Bastion
 
-The bastion host acts as the "jump point" for the rest of the infrastructure. Since most of our instances aren't exposed to the external internet, the bastion acts as the gatekeeper for any direct SSH access.
+The bastion host acts as the "jump point" for the rest of the infrastructure. Since most of our instances are not exposed to the external internet, the bastion acts as the gatekeeper for any direct SSH access.
 
 The bastion is provisioned using the key name that you pass to the stack (and hopefully have stored somewhere). If you ever need to access an instance directly, you can do it by "jumping through" the bastion:
 
