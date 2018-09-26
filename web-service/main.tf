@@ -139,6 +139,11 @@ variable vpc_id {
   description = "The id of the VPC."
 }
 
+variable "log_driver" {
+  description = "The log driver to use use for the container"
+  default     = "journald"
+}
+
 /**
  * Resources.
  */
@@ -181,6 +186,7 @@ module "task" {
   memory            = "${var.memory}"
   cpu               = "${var.cpu}"
   working_directory = "${var.working_directory}"
+  log_driver    = "${var.log_driver}"
 
   ports = <<EOF
   [
