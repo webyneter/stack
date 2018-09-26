@@ -122,9 +122,9 @@ resource "aws_security_group_rule" "main-ingress-sgs" {
   count                    = "${length(var.ingress_allow_security_groups)}"
   source_security_group_id = "${element(var.ingress_allow_security_groups, count.index)}"
 
-  from_port                = "${var.port}"
-  to_port                  = "${var.port}"
-  protocol                 = "TCP"
+  from_port = "${var.port}"
+  to_port   = "${var.port}"
+  protocol  = "TCP"
 }
 
 resource "aws_security_group_rule" "main-egress-all" {
@@ -136,11 +136,11 @@ resource "aws_security_group_rule" "main-egress-all" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-
 resource "aws_security_group" "main" {
   name        = "${var.name}-rds"
   description = "Allows traffic to RDS from other security groups"
   vpc_id      = "${var.vpc_id}"
+
   tags {
     Name = "RDS (${var.name})"
   }

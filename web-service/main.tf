@@ -186,7 +186,7 @@ module "task" {
   memory            = "${var.memory}"
   cpu               = "${var.cpu}"
   working_directory = "${var.working_directory}"
-  log_driver    = "${var.log_driver}"
+  log_driver        = "${var.log_driver}"
 
   ports = <<EOF
   [
