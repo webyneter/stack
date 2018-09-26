@@ -127,6 +127,11 @@ variable "ecs_security_groups" {
   default     = ""
 }
 
+variable "ecs_extra_security_groups" {
+  description = "A comma separated list of security groups added to the default security groups of the stack"
+  default     = ""
+}
+
 variable "ecs_ami" {
   description = "The AMI that will be used to launch EC2 instances in the ECS cluster"
   default     = ""
@@ -233,7 +238,6 @@ module "s3_logs" {
   source                  = "./s3-logs"
   name                    = "${var.name}"
   environment             = "${var.environment}"
-  account_id              = "${module.defaults.s3_logs_account_id}"
   logs_expiration_enabled = "${var.logs_expiration_enabled}"
   logs_expiration_days    = "${var.logs_expiration_days}"
 }
@@ -331,4 +335,14 @@ output "internal_route_tables" {
 // The external route table ID.
 output "external_route_tables" {
   value = "${module.vpc.external_rtb_id}"
+}
+
+// The external ssh security group ID.
+output "external_ssh" {
+  value = "${module.security_groups.external_ssh}"
+}
+
+// The internal ssh security group ID.
+output "internal_ssh" {
+  value = "${module.security_groups.internal_ssh}"
 }
