@@ -1,0 +1,12 @@
+.*
+
+*.tfstate
+*.tfstate*
+*.swp
+*~
+
+circle.yml
+Dockerfile
+docs.md
+License.md
+Readme.md
