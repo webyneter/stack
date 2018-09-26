@@ -5,6 +5,8 @@
 *.swp
 *~
 
+images/
+
 circle.yml
 Dockerfile
 docs.md
